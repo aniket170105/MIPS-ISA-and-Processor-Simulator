@@ -36,6 +36,39 @@ void sw(uint32_t address, uint32_t value, vector <uint8_t> &memory) {
     std::memcpy(&memory[address], &value, sizeof(value));
 }
 
+string parseEscapeSequences(string& input) {
+    string result;
+    for (size_t i = 0; i < input.length(); i++) {
+        if (input[i] == '\\' && i + 1 < input.length()) {
+            switch (input[i + 1]) {
+                case 'n':
+                    result += '\n';
+                    break;
+                case 't':
+                    result += '\t';
+                    break;
+                case '\\':
+                    result += '\\';
+                    break;
+                case '"':
+                    result += '"';
+                    break;
+                case '0':
+                    result += '\0';
+                    break;
+                default:
+                    // Unrecognized escape sequence, keep it as is
+                    result += input[i];
+                    result += input[i + 1];
+            }
+            i++; // Skip the next character as we've already processed it
+        } else {
+            result += input[i];
+        }
+    }
+    return result;
+}
+
 map <string,int> takingCareOfDataSection(vector <vector <string>> &data, vector <uint8_t> &MEMORY, int* POINTING_TO_MEMORY_Pointer){
     map <string,int> mp; // label, <type, datatype>
     for(auto &x : data){
@@ -48,6 +81,9 @@ map <string,int> takingCareOfDataSection(vector <vector <string>> &data, vector 
             if(temp[0] == '"' && temp.back() == '"'){
                 temp = temp.substr(1);
                 temp.pop_back();
+
+                temp = parseEscapeSequences(temp);
+
                 mp[x[0]] = *POINTING_TO_MEMORY_Pointer;
                 storeString(*POINTING_TO_MEMORY_Pointer, temp, MEMORY);
                 *POINTING_TO_MEMORY_Pointer += temp.size() + 1;

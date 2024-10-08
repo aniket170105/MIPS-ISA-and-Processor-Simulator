@@ -116,7 +116,7 @@ public:
             string inst_str = inst.to_string();
             if(inst_str.substr(0,6) == "000000" && inst_str.substr(26,6) == "001100"){
                 // Code for syscall
-                handleSyscall();
+                handleSyscall(MEMORY);
                 STARTING_INSTRUCTION += 4;
             }
             else{
@@ -280,18 +280,31 @@ public:
         return str + "00";
     }
 
-    void handleSyscall(){
+    void handleSyscall(vector <uint8_t> &MEMORY){
         // Only hande read and write - string and int and terminate program
-        // Can not implement read or write string for that we need "la"
+        // Can not implement read or write string for that we need "la"    // Now "la" also implemented
         int v0_val = register_file["00010"];  // $v0 = 2
         if(v0_val == 1){
             // print $a0 
             cout<<(int)register_file["00100"];
         }
+        else if(v0_val == 4){
+            // Print string 
+            int a0_val = register_file["00100"];
+            unsigned char* temp = &MEMORY[a0_val];
+            cout<<temp;
+        }
         else if(v0_val == 5){
             // Read integer and store in $v0
             int temp; cin>>temp;
             register_file["00010"] = temp;
+        }
+        else if(v0_val == 8){
+            // Read String ($a0 address of input buffer, $a1 max length to read)
+            int a0_val = register_file["00100"], a1_val = register_file["00101"];
+            unsigned char* str1 = &MEMORY[a0_val];
+            cin.width(a1_val + 1); // Set width to limit input
+            cin >> str1;
         }
         else if(v0_val == 10){
             terminateStatusReceived();

@@ -42,9 +42,9 @@ map <string, string> registerNumberToBinary = {
         {"$28", "11100"}, {"$29", "11101"}, {"$30", "11110"}, {"$31", "11111"}
     };
 
-const set <string> instructionNameBeingUsed = {"syscall", "add", "sub", "mul", "ori","sll", "slt", "lw", "beq", "addi", "j", "jal", "jr", "li", "lui", "sw"};
+const set <string> instructionNameBeingUsed = {"syscall", "add", "sub", "mul", "ori","sll", "slt", "lw", "beq", "addi", "j", "jal", "jr", "li", "la", "lui", "sw"};
 map <string, int> instructionSize = {{"add", 1}, {"sub", 1}, {"addi", 1}, {"mul", 1}, {"lw", 1}, {"sw", 1}, {"slt", 1}, {"sll", 1},
-{"move", 1}, {"lui", 1}, {"ori", 1}, {"li", 2}, {"beq", 1},{"j", 1}, {"jal", 1}, {"jr", 1},{"syscall", 1}};
+{"move", 1}, {"lui", 1}, {"ori", 1}, {"li", 2}, {"la", 2}, {"beq", 1},{"j", 1}, {"jal", 1}, {"jr", 1},{"syscall", 1}};
 
 // Load word (4 bytes)
 uint32_t lw2(uint32_t address, vector <uint8_t> &memory) {
@@ -57,6 +57,7 @@ uint32_t lw2(uint32_t address, vector <uint8_t> &memory) {
 void sw2(uint32_t address, uint32_t value, vector <uint8_t> &memory) {
     std::memcpy(&memory[address], &value, sizeof(value));
 }
+
 
 vector<uint32_t> clearAdd(vector <string> &instruction){
     if(instruction.size() != 4){
@@ -339,6 +340,28 @@ vector<uint32_t> clearLi(vector <string> &instruction){
     return ans;
 }
 
+vector<uint32_t> clearLa(vector <string> &instruction, map <string, int> &label_address){
+    // Because it is a pseudo instruction lui and ori
+    if(instruction.size() != 3){
+        cout<<"Error"<<endl;
+        return {0};
+    }
+    int imme_int = label_address[instruction[2]];
+    string rs = instruction[1];
+    bitset <16> lower_bit(imme_int);   /// Yes working fine !!!!!!!
+    vector <string> inst_for_ori = {"ori", rs, rs, to_string(lower_bit.to_ulong())};
+    vector <string> inst_for_lui = {"lui", rs, to_string(imme_int>>16)};
+
+    vector <uint32_t> ans;
+    for(auto &x : clearLui(inst_for_lui)){
+        ans.push_back(x);
+    }
+    for(auto &x : clearOri(inst_for_ori)){
+        ans.push_back(x);
+    }
+    return ans;
+}
+
 vector<uint32_t> clearLwAndSw(vector <string> &instruction, bool isLw){
     if(instruction.size() != 3){
         cout<<"Error"<<endl;
@@ -515,6 +538,9 @@ vector <uint32_t> convertOneLine(vector <string> &instruction, map <string, int>
     }
     else if(instruction[0] == "li"){
         return clearLi(instruction);
+    }
+    else if(instruction[0] == "la"){
+        return clearLa(instruction, label_address);
     }
     else if(instruction[0] == "lw"){
         return clearLwAndSw(instruction, true);

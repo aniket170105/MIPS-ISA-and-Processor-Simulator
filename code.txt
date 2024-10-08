@@ -1,2 +1,23 @@
+.data
+    test_string: .asciiz "First line\nSecond line\nThird line\n"
+    test_tab:    .asciiz "Column1\tColumn2\tColumn3\n"
+    test_quote:  .asciiz "He said \"Hello!\""
+
 .text
-main:   li      $v0, 5          # syscall 5 = read integer
+main:
+    # Print each test string
+    la $a0, test_string
+    li $v0, 4
+    syscall
+
+    la $a0, test_tab
+    li $v0, 4
+    syscall
+
+    la $a0, test_quote
+    li $v0, 4
+    syscall
+
+    # Exit
+    li $v0, 10
+    syscall
