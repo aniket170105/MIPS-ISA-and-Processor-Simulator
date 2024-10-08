@@ -1,0 +1,2 @@
+.text
+main:   li      $v0, 5          # syscall 5 = read integer
