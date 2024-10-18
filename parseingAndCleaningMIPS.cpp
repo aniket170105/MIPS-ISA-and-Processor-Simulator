@@ -4,7 +4,7 @@ using namespace std;
 //////// This section is completely done now
 /// Some Assumption Instruction will always come in format add $1, $2, $3
 //  It cannot be something like add, $t1 ---->>>> Because this is also valid according to MARS.
-// But I can make some changes to include this also
+// But I can make some changes to include this also -- Done 
 
 vector<string> splitString(string& str, char delimiter) {
     vector<string> result;
@@ -70,53 +70,6 @@ pair<string, string> instructionAndFirstRegister(string &str){
     return {instr, regi};
 }
 
-void readAndClearCode(string filename){
-    fstream newfile;
-    newfile.open(filename,ios::in);
-    vector <vector <string>> new_code;
-    string temp;
-    while(getline(newfile,temp)){
-        // cout<<temp<<endl;
-        // flush(cout);
-        string cleaned_string = clearString(temp);
-        if(cleaned_string.size()){ //// To check if it contain any instruction But why 1 so '\n' does not get included not needed more
-        // No it was not due to that it was due to "Tab"
-            // cout<<cleaned_string<<endl;
-            // flush(cout);
-            int doesLabExist = doesLabelExist(cleaned_string, ':'); /// just checking if label and instruction are in same line
-            // cout<<doesLabExist<<endl;
-            if(doesLabExist != -1){ 
-                string label = cleaned_string.substr(0 , doesLabExist); /// If label exist create a new line
-                new_code.push_back({label});
-                cleaned_string = cleaned_string.substr(doesLabExist + 1);
-            }
-            if(cleaned_string.size()){
-                vector <string> part_of_instruction = splitString(cleaned_string, ',');
-                if(part_of_instruction.size() > 3 || part_of_instruction.size() < 1){
-                    //// throw error
-                    throw "error";
-                    return;
-                }
-                vector <string> one_instruction;
-                auto partone = instructionAndFirstRegister(part_of_instruction[0]);
-                one_instruction.push_back(partone.first); one_instruction.push_back(partone.second);
-                for(int i=1; i<part_of_instruction.size(); i++){
-                    string copy = part_of_instruction[i];
-                    removeSpaces(copy);
-                    one_instruction.push_back(copy);
-                }
-                new_code.push_back(one_instruction);
-            }
-        }
-    }
-    for(auto &x : new_code){
-        for(auto &y : x){
-            cout<<y<<" ";
-        }
-        cout<<endl;
-    }
-}
-
 
 vector <vector<string>> readDataSection(int start, int end, vector <string> &data){
     vector <vector <string>> ans;
@@ -126,14 +79,20 @@ vector <vector<string>> readDataSection(int start, int end, vector <string> &dat
         if(cleaned_string.size()){
             vector <string> temp;
             int doesLabExist = doesLabelExist(cleaned_string, ':');
-            if(doesLabExist == -1) throw "Error"; /// Throw error because some sentence exist without any data type
+            if(doesLabExist == -1) {//throw "Error"; /// Throw error because some sentence exist without any data type
+                cout<<"In .data section Label exist without any Type : "<<data[i]<<endl;
+                exit(0);
+            }
             string label = cleaned_string.substr(0 , doesLabExist);
             cleaned_string = cleaned_string.substr(doesLabExist + 1);
 
             // We cannot just directly use this say .asciiz "Input an string to check whether it is pali or not : " 
             // It will try to split at all ' ', which is not what we want
             vector <string> splited =  splitString(cleaned_string);
-            if(splited.size() != 2) throw "Error";
+            if(splited.size() != 2) {//throw "Error";
+                cout<<"Something extra is there : "<<data[i]<<endl;
+                exit(0);
+            }
             temp.push_back(clearString(label));
             for(auto &x : splited){
                 temp.push_back(clearString(x));
@@ -164,7 +123,8 @@ vector <vector<string>> readTextSection(int start, int end, vector <string> &dat
                 vector <string> part_of_instruction = splitString(cleaned_string, ',');
                 if(part_of_instruction.size() > 3 || part_of_instruction.size() < 1){
                     //// throw error
-                    throw "error";
+                    cout<<"Instruction error : "<<data[i]<<endl;
+                    exit(0);
                 }
                 vector <string> one_instruction;
                 auto partone = instructionAndFirstRegister(part_of_instruction[0]);
@@ -185,6 +145,10 @@ vector <vector<string>> readTextSection(int start, int end, vector <string> &dat
 pair<vector <vector<string>>,vector <vector<string>>> readAndClearCode2(string filename){
     fstream newfile;
     newfile.open(filename,ios::in);
+    if(!newfile.is_open()){
+        cout<<"Error while Opening While make sure its in same directory as the code"<<endl;
+        exit(0);
+    }
     vector <vector <string>> new_code;
     string str; vector <string> file;
     while(getline(newfile, str)){

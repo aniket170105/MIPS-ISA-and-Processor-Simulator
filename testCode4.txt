@@ -1,0 +1,92 @@
+#Calculating Factorial
+.data
+    prompt:     .asciiz "Enter a positive number: "
+    result:     .asciiz "Factorial is: "
+    newline:    .asciiz "\n"
+    error:      .asciiz "Please enter a non-negative number\n"
+
+.text
+main:
+    # Print prompt
+    li $v0, 4           # syscall code for print string
+    la $a0, prompt      # load address of prompt
+    syscall
+
+    # Read integer
+    li $v0, 5           # syscall code for read integer
+    syscall
+    move $a0, $v0       # move input to $a0
+
+    # Check if input is negative
+    li $t0, 0
+    slt $t0, $a0, $t0   # if input < 0, $t0 = 1
+    beq $t0, $zero, valid_input
+    
+    # Print error message for negative input
+    li $v0, 4
+    la $a0, error
+    syscall
+    j main              # ask for input again
+
+valid_input:
+    # Save return address
+    addi $sp, $sp, -4   # adjust stack pointer
+    sw $ra, 0($sp)      # save return address
+
+    # Call factorial function
+    jal factorial
+
+    # Restore return address
+    lw $ra, 0($sp)      # restore return address
+    addi $sp, $sp, 4    # adjust stack pointer
+
+    # Move result to $a1
+    move $a1, $v0
+
+    # Print result string
+    li $v0, 4
+    la $a0, result
+    syscall
+
+    # Print factorial result
+    li $v0, 1
+    move $a0, $a1
+    syscall
+
+    # Print newline
+    li $v0, 4
+    la $a0, newline
+    syscall
+
+    # Exit program
+    li $v0, 10
+    syscall
+
+factorial:
+    # Base case: if n = 0 or n = 1, return 1
+    li $t0, 1           # load 1 for comparison
+    beq $a0, $zero, return_one  # if n = 0, return 1
+    beq $a0, $t0, return_one    # if n = 1, return 1
+
+    # Recursive case
+    # Save current n and return address
+    addi $sp, $sp, -8   # make space on stack
+    sw $ra, 4($sp)      # save return address
+    sw $a0, 0($sp)      # save current n
+
+    # Calculate (n-1)
+    addi $a0, $a0, -1   # n = n - 1
+    jal factorial       # recursive call
+
+    # Restore n and return address
+    lw $a0, 0($sp)      # restore n
+    lw $ra, 4($sp)      # restore return address
+    addi $sp, $sp, 8    # restore stack pointer
+
+    # Calculate n * factorial(n-1)
+    mul $v0, $a0, $v0   # result = n * factorial(n-1)
+    jr $ra              # return
+
+return_one:
+    li $v0, 1           # return value = 1
+    jr $ra              # return

@@ -5,8 +5,7 @@ using namespace std;
 // Problems
 // Here Labels should also be allocated address. So, how to do it?? -- One think can be start after .text labels
 
-// In .data section we are only going to include .asciiz, .ascii (No because not safe), .space (To allocate space Static)
-using DataType = variant<vector <uint8_t>,string>; 
+// In .data section we are only going to include .asciiz, .ascii (No because not safe), .space (To allocate space Static) 
 // std::get<std::string>(
 int stringToInteger2(string &str){
     stringstream s(str);
@@ -18,7 +17,8 @@ int stringToInteger2(string &str){
 // Store string
 void storeString(uint32_t address, const std::string& str, vector <uint8_t> &memory) {
     if (address + str.size() >= 1e4) {
-        std::cerr << "Error: String exceeds memory bounds." << std::endl;
+        cout<< "Error: String exceeds memory bounds." <<endl;
+        exit(0);
         return;
     }
     std::memcpy(&memory[address], str.c_str(), str.size() + 1); // +1 to include null terminator
@@ -74,6 +74,7 @@ map <string,int> takingCareOfDataSection(vector <vector <string>> &data, vector 
     for(auto &x : data){
         if(x.size() != 3){
             cout<<"Error Incomplete Data Section"<<endl;
+            exit(0);
             return mp;
         }
         if(x[1] == ".asciiz"){
@@ -89,7 +90,8 @@ map <string,int> takingCareOfDataSection(vector <vector <string>> &data, vector 
                 *POINTING_TO_MEMORY_Pointer += temp.size() + 1;
             }
             else{
-                cout<<"Error in .asciiz not found "" correctly "<<endl;
+                cout<<"Error in .asciiz not found \"\" correctly "<<endl;
+                exit(0);
                 return mp;
             }
         }
@@ -104,12 +106,17 @@ map <string,int> takingCareOfDataSection(vector <vector <string>> &data, vector 
         }
         else if(x[1] == ".space"){
             int size = stringToInteger2(x[2]);
+            if(size < 0){
+                cout<<"In .space size cannot be negative"<<endl;
+                exit(0);
+            }
             vector <uint8_t> temp(size);
             mp[x[0]] = *POINTING_TO_MEMORY_Pointer;    // We will use this as byte space to read and write in this when needed.
             *POINTING_TO_MEMORY_Pointer += size;
         }
         else{
             cout<<"Currently Does Not Support This : "<<x[1]<<endl;
+            exit(0);
             return mp;
         }
     }

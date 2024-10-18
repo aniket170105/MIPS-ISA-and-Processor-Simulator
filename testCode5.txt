@@ -1,0 +1,86 @@
+.data
+    prompt1:    .asciiz "Enter first number: "
+    prompt2:    .asciiz "Enter second number: "
+    op_prompt:  .asciiz "\nSelect operation:\n1. Add\n2. Subtract\n3. Multiply\nEnter choice (1-3): "
+    result:     .asciiz "\nResult: "
+    newline:    .asciiz "\n"
+
+.text
+
+main:
+    # Print first prompt
+    li $v0, 4
+    la $a0, prompt1
+    syscall
+
+    # Read first number
+    li $v0, 5
+    syscall
+    move $t0, $v0       # Store first number in $t0
+
+    # Print second prompt
+    li $v0, 4
+    la $a0, prompt2
+    syscall
+
+    # Read second number
+    li $v0, 5
+    syscall
+    move $t1, $v0       # Store second number in $t1
+
+operation_select:
+    # Print operation selection prompt
+    li $v0, 4
+    la $a0, op_prompt
+    syscall
+
+    # Read operation choice
+    li $v0, 5
+    syscall
+    move $t2, $v0       # Store operation choice in $t2
+
+    # Branch to appropriate operation
+    li $t3, 1
+    beq $t2, $t3, add_operation
+    
+    li $t3, 2
+    beq $t2, $t3, sub_operation
+    
+    li $t3, 3
+    beq $t2, $t3, mul_operation
+
+    # If invalid choice, ask again
+    j operation_select
+
+add_operation:
+    add $t4, $t0, $t1
+    j print_result
+
+sub_operation:
+    sub $t4, $t0, $t1
+    j print_result
+
+mul_operation:
+    mul $t4, $t0, $t1
+    j print_result
+
+print_result:
+    # Print result string
+    li $v0, 4
+    la $a0, result
+    syscall
+
+    # Print result number
+    li $v0, 1
+    move $a0, $t4
+    syscall
+
+    # Print newline
+    li $v0, 4
+    la $a0, newline
+    syscall
+
+exit_program:
+    # Exit program
+    li $v0, 10
+    syscall

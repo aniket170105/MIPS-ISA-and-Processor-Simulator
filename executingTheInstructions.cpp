@@ -6,7 +6,6 @@ using namespace std;
 // https://ocw.mit.edu/courses/6-823-computer-system-architecture-fall-2005/964e8d2c1085754ba5ed2eba48269a0b_l05_singlecycle.pdf
 // Tweaking processor to also include $jr, $jal, $lui, $ori and $addi
 // 
-
 // I was not able to find any good source which by taking opcode + func and employing combinational circuit 
 // generate control signal. So, for my specific use case I will generate control signal accordingly.
 
@@ -57,6 +56,14 @@ public:
             else if(funct == "000010"){
                 // mul
                 return "10000001010001";
+            }
+            else if(funct == "100100"){
+                // and
+                return "10000001110001";
+            }
+            else if(funct == "100101"){
+                // or
+                return "10000001011001";
             }
             else if(funct == "101010"){
                 // slt
@@ -124,6 +131,10 @@ public:
                 int incremented_PC = STARTING_INSTRUCTION + 4;
                 // Instruction Fetch Phase
                 string control_signal = generateControlSignal(inst_str);
+                if(control_signal.size() != 14){
+                    cout<<"Error while generating Control Signal"<<endl;
+                    terminateStatusReceived();
+                }
                 /// [0-1] RegDst, [2-3] PCSrc, [4] Branch, [5] MemRead, [6-7] MemToReg, [8-10] ALUOp, [11] MemWrite, [12] AluSrc, [13] RegWrite
                 string RegDst = control_signal.substr(0,2), PCSrc = control_signal.substr(2,2), Branch = control_signal.substr(4,1),
                 MemRead = control_signal.substr(5,1), MemToReg = control_signal.substr(6,2), ALUOp = control_signal.substr(8,3),
@@ -156,7 +167,10 @@ public:
                 STARTING_INSTRUCTION = finalNextPC(WHOLE_JUMP_PC.to_ulong(), co_BEQ_PC4, ReadData1, PCSrc);
             }
         }
-        cout<<"Reached End of Instruction"<<endl;
+        cout<<"Reached End of Instruction"<<endl<<"Now Printing Registers values"<<endl;
+        for(auto &x : register_file){
+            cout<<"Register : "<<x.first<<" "<<"Value : "<<x.second<<endl;
+        }
     }
 
     uint32_t finalNextPC(int WHOLE_JUMP_PC, int co_BEQ_PC4, int jr, string PCSrc){
@@ -233,6 +247,9 @@ public:
         }
         else if(ALUOp == "101"){
             return {a==b, a<b};
+        }
+        else if(ALUOp == "110"){
+            return {a==b, (a&b)};
         }
         else{
             cout<<"No such ALUop found"<<endl;

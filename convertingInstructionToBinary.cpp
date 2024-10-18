@@ -3,13 +3,9 @@
 using namespace std;
 
 // Completed
-
 /// Problems ??
 // How exactly am I going to simulate stack, should I use int array or char array --> If i use char array then alignment issuse 
 // will not come i.e. Lab 4 in which double needed to be aligned.
-
-// Assumption when implementing jump instruction, we do PC+4+label, but here since i am storing it vector<string> i can 
-// also use index to create this offset. But it is not neccessary.
 
 int STARTING_POINT_OF_INSTRUCTIONS;
 
@@ -42,8 +38,8 @@ map <string, string> registerNumberToBinary = {
         {"$28", "11100"}, {"$29", "11101"}, {"$30", "11110"}, {"$31", "11111"}
     };
 
-const set <string> instructionNameBeingUsed = {"syscall", "add", "sub", "mul", "ori","sll", "slt", "lw", "beq", "addi", "j", "jal", "jr", "li", "la", "lui", "sw"};
-map <string, int> instructionSize = {{"add", 1}, {"sub", 1}, {"addi", 1}, {"mul", 1}, {"lw", 1}, {"sw", 1}, {"slt", 1}, {"sll", 1},
+const set <string> instructionNameBeingUsed = {"syscall", "add", "sub", "mul", "and", "or", "ori","sll", "slt", "lw", "beq", "move", "addi", "j", "jal", "jr", "li", "la", "lui", "sw"};
+map <string, int> instructionSize = {{"add", 1}, {"sub", 1}, {"addi", 1}, {"and", 1}, {"or", 1}, {"mul", 1}, {"lw", 1}, {"sw", 1}, {"slt", 1}, {"sll", 1},
 {"move", 1}, {"lui", 1}, {"ori", 1}, {"li", 2}, {"la", 2}, {"beq", 1},{"j", 1}, {"jal", 1}, {"jr", 1},{"syscall", 1}};
 
 // Load word (4 bytes)
@@ -61,28 +57,92 @@ void sw2(uint32_t address, uint32_t value, vector <uint8_t> &memory) {
 
 vector<uint32_t> clearAdd(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in add is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, rd, shamt, func, temp;
     opcode = "000000"; func = "100000"; shamt = "00000";
     temp = instruction[3];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
+
+    bitset <32> answer(opcode+rs+rt+rd+shamt+func);
+    return {answer.to_ulong()}; 
+}
+
+vector<uint32_t> clearAnd(vector <string> &instruction){
+    if(instruction.size() != 4){
+        cout<<"Instruction in \"and\" is wrong"<<endl; // Throw error because it's not a valid add instruction
+        return {0};
+    }
+    string opcode, rs, rt, rd, shamt, func, temp;
+    opcode = "000000"; shamt = "00000"; func = "100100";
+    temp = instruction[3];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
+
+    temp = instruction[2];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
+
+    temp = instruction[1];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
+
+    bitset <32> answer(opcode+rs+rt+rd+shamt+func);
+    return {answer.to_ulong()}; 
+}
+
+vector<uint32_t> clearOr(vector <string> &instruction){
+    if(instruction.size() != 4){
+        cout<<"Instruction in \"or\" is wrong"<<endl; // Throw error because it's not a valid add instruction
+        return {0};
+    }
+    string opcode, rs, rt, rd, shamt, func, temp;
+    opcode = "000000"; shamt = "00000"; func = "100101";
+    temp = instruction[3];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
+
+    temp = instruction[2];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
+        return {0};
+    }
+    rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
+
+    temp = instruction[1];
+    if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -93,7 +153,7 @@ vector<uint32_t> clearAdd(vector <string> &instruction){
 
 vector<uint32_t> clearAddi(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in Addi is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, immediate, temp;
@@ -106,14 +166,14 @@ vector<uint32_t> clearAddi(vector <string> &instruction){
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -124,28 +184,28 @@ vector<uint32_t> clearAddi(vector <string> &instruction){
 
 vector<uint32_t> clearSub(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in SUB is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, rd, shamt, func, temp;
     opcode = "000000"; func = "100010"; shamt = "00000";
     temp = instruction[3];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -156,28 +216,28 @@ vector<uint32_t> clearSub(vector <string> &instruction){
 
 vector<uint32_t> clearMul(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in MUL is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, rd, shamt, func, temp;
     opcode = "000000"; func = "000010"; shamt = "00000";
     temp = instruction[3];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -188,28 +248,28 @@ vector<uint32_t> clearMul(vector <string> &instruction){
 
 vector<uint32_t> clearSlt(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in SLT is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, rd, shamt, func, temp;
     opcode = "000000"; func = "101010"; shamt = "00000";
     temp = instruction[3];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -220,7 +280,7 @@ vector<uint32_t> clearSlt(vector <string> &instruction){
 
 vector<uint32_t> clearSll(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error Encoutered"; // Throw error because it's not a valid add instruction
+        cout<<"Instruction in SLL is wrong"<<endl; // Throw error because it's not a valid add instruction
         return {0};
     }
     string opcode, rs, rt, rd, shamt, func, temp;
@@ -228,7 +288,7 @@ vector<uint32_t> clearSll(vector <string> &instruction){
     int imme_int = stringToInteger(instruction[3]);
     // cout<<imme_int<<endl;
     if(imme_int<0 || imme_int > pow(2,5)){
-        cout<<"Error Encountered"<<endl;
+        cout<<"shamt error"<<endl;
         return {0};
     }
     bitset <5> imme_bit(imme_int);
@@ -236,14 +296,14 @@ vector<uint32_t> clearSll(vector <string> &instruction){
     rs = "00000";
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rd = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -254,7 +314,7 @@ vector<uint32_t> clearSll(vector <string> &instruction){
 
 vector<uint32_t> clearMove(vector <string> &instruction){
     if(instruction.size() != 3){
-        cout<<" Error Encountered"<<endl;
+        cout<<"Instruction in MOVE is wrong"<<endl;
         return {0};
     }
     /// It is a pseudo instruction : move $t1, $t2  == add $t1, $t2, $zero
@@ -264,7 +324,7 @@ vector<uint32_t> clearMove(vector <string> &instruction){
 
 vector<uint32_t> clearLui(vector <string> &instruction){
     if(instruction.size() != 3){
-        cout<<"Error"<<endl;
+        cout<<"Instruction in LUI is wrong"<<endl;
         return {0};
     }
     string opcode, rs, rt, immediate, temp;
@@ -277,7 +337,7 @@ vector<uint32_t> clearLui(vector <string> &instruction){
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -289,7 +349,7 @@ vector<uint32_t> clearLui(vector <string> &instruction){
 
 vector<uint32_t> clearOri(vector <string> &instruction){
     if(instruction.size() != 4){
-        cout<<"Error"<<endl;
+        cout<<"Instruction in ORI is wrong"<<endl;
         return {0};
     }
     string opcode, rs, rt, immediate, temp;
@@ -302,14 +362,14 @@ vector<uint32_t> clearOri(vector <string> &instruction){
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];  
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];    
@@ -321,7 +381,7 @@ vector<uint32_t> clearOri(vector <string> &instruction){
 vector<uint32_t> clearLi(vector <string> &instruction){
     // Because it is a pseudo instruction lui and ori
     if(instruction.size() != 3){
-        cout<<"Error"<<endl;
+        cout<<"Instruction in LI is wrong"<<endl;
         return {0};
     }
     int imme_int = stringToInteger(instruction[2]);
@@ -343,7 +403,7 @@ vector<uint32_t> clearLi(vector <string> &instruction){
 vector<uint32_t> clearLa(vector <string> &instruction, map <string, int> &label_address){
     // Because it is a pseudo instruction lui and ori
     if(instruction.size() != 3){
-        cout<<"Error"<<endl;
+        cout<<"Instruction in LA is wrong"<<endl;
         return {0};
     }
     int imme_int = label_address[instruction[2]];
@@ -364,7 +424,7 @@ vector<uint32_t> clearLa(vector <string> &instruction, map <string, int> &label_
 
 vector<uint32_t> clearLwAndSw(vector <string> &instruction, bool isLw){
     if(instruction.size() != 3){
-        cout<<"Error"<<endl;
+        cout<<"Instruction in LW or SW is wrong"<<endl;
         return {0};
     }
     string temp = instruction[2], rs, rt;
@@ -376,13 +436,13 @@ vector<uint32_t> clearLwAndSw(vector <string> &instruction, bool isLw){
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     if(registerNameToNumberMatching.find(rs) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[rs]];
@@ -415,14 +475,14 @@ vector<uint32_t> clearBeq(vector <string> &instruction, map <string, int> &label
 
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
 
     temp = instruction[2];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rt = registerNumberToBinary[registerNameToNumberMatching[temp]];
@@ -483,7 +543,7 @@ vector<uint32_t> clearJr(vector <string> &instruction){
     string rs, temp;
     temp = instruction[1];
     if(registerNameToNumberMatching.find(temp) == registerNameToNumberMatching.end()){
-        cout<<"Error Encoutered"<<endl;
+        cout<<"No such register found : "<<temp<<endl;
         return {0};
     }
     rs = registerNumberToBinary[registerNameToNumberMatching[temp]];
@@ -520,6 +580,12 @@ vector <uint32_t> convertOneLine(vector <string> &instruction, map <string, int>
     }
     else if(instruction[0] == "mul"){
         return clearMul(instruction);
+    }
+    else if(instruction[0] == "and"){
+        return clearAnd(instruction);
+    }
+    else if(instruction[0] == "or"){
+        return clearOr(instruction);
     }
     else if(instruction[0] == "slt"){
         return clearSlt(instruction);
@@ -594,16 +660,16 @@ int convertInstructionToBinary(vector <vector<string>> &data, map <string, int> 
         }
     }
 
-    for(auto &x : label_address){
-        cout<<x.first<<" "<<x.second<<endl;
-    }
+    // for(auto &x : label_address){
+    //     cout<<x.first<<" "<<x.second<<endl;
+    // }
 
-    for(auto &x : onlyInstructionNoLabels){
-        for(auto &y : x){
-            cout<<'"'<<y<<'"'<<" ";
-        }
-        cout<<endl;
-    }
+    // for(auto &x : onlyInstructionNoLabels){
+    //     for(auto &y : x){
+    //         cout<<'"'<<y<<'"'<<" ";
+    //     }
+    //     cout<<endl;
+    // }
 
     cout<<"Finished Parsing"<<endl;
     flush(cout);
@@ -618,6 +684,17 @@ int convertInstructionToBinary(vector <vector<string>> &data, map <string, int> 
         }
         // num_of_instruction += instructionSize[instruction[0]];
     }
+
+    // For writting instruction in binaryOutput.txt
+    ofstream file("binaryOutput.txt", std::ios::trunc);
+    for(int i=STARTING_POINT_OF_INSTRUCTIONS; i<*POINTING_TO_MEMORY_Pointer; i+=4){
+        bitset <32> gg(lw2(i, MEMORY));
+        file << gg.to_string(); file<<"\n";
+        // cout<<gg.to_string()<<endl;
+    }
+    file.close();
+    // Done
+
     return STARTING_POINT_OF_INSTRUCTIONS;
 }
 

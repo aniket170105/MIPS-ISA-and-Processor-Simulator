@@ -3,9 +3,9 @@
 #include "convertingInstructionToBinary.cpp"
 #include "takingCareOfDataSection.cpp"
 #include "executingTheInstructions.cpp"
-
-
 using namespace std;
+
+// DONE AND DUSTED
 /// Assumption we are going to implement a single cycle Processor
 // Also we are only working with main cpu and not coprocessor (fpu) because there instruction formata are different and 
 // it complicate thinks
@@ -17,8 +17,10 @@ int POINTING_TO_MEMORY = 0, END_OF_DATA_SECTION = 0;
 // After end of data section will be used to store any variable read from syscall 
 
 int main(){
-    cout<<"gg"<<endl;
-    auto it = readAndClearCode2("code.txt");
+    string filename;
+    cout<<"Enter the Asm file name : ";
+    cin>>filename;
+    auto it = readAndClearCode2(filename);
     // vector <string> ans = convertInstructionToBinary(it.second);
     map <string, int> label_address = takingCareOfDataSection(it.first, MEMORY, &POINTING_TO_MEMORY);
     // This same map will be used in .data section.
@@ -37,17 +39,15 @@ int main(){
     }
     int STARTING_INSTRUCTION = convertInstructionToBinary(it.second, label_address, MEMORY, &POINTING_TO_MEMORY);
 
-    for(auto &x : label_address){
-        cout<<x.first<<" "<<x.second<<endl;
-    }
+    // for(auto &x : label_address){
+    //     cout<<x.first<<" "<<x.second<<endl;
+    // }
 
-    for(int i=STARTING_INSTRUCTION; i<=124+STARTING_INSTRUCTION; i+=4){
-        bitset <32> gg(lw2(i, MEMORY));
-        cout<<gg.to_string()<<endl;
-    }
+    // for(int i=STARTING_INSTRUCTION; i<=124+STARTING_INSTRUCTION; i+=4){
+    //     bitset <32> gg(lw2(i, MEMORY));
+    //     cout<<gg.to_string()<<endl;
+    // }
 
     CPU* mycpu = new CPU();
-
     mycpu->executeInstruction(MEMORY, STARTING_INSTRUCTION);
-    cout<<"gg"<<endl;
 }

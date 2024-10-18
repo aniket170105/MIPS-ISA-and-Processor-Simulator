@@ -1,3 +1,4 @@
+#To find Nth catlan Number
 .data 
     prompt: .asciiz "Please enter an integer n : "
     debug: .asciiz "Hello\n"

@@ -1,0 +1,20 @@
+.data
+    val1: .word 5
+    val2: .word 5
+  
+.text
+    # For lw $t0, num1
+    la $at, val1
+    lw $t0, 0($at)
+
+    # For lw $t1, num2
+    la $at, val2
+    lw $t1, 0($at)
+    addi $t2, $t0, 10
+    beq $t0, $t1, equal_case
+    sub $t3, $t0, $t1
+    j end
+equal_case:
+    add $t3, $t0, $t1
+  
+end:
